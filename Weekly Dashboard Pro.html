@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Dashboard</title>
+    <style>
+        :root {
+            --primary: #00bfff;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #ff6b6b;
+            --bg-dark: #0f1419;
+            --bg-card: #1a2332;
+            --border: #2d3e52;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .button-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-export {
+            background: var(--success);
+            color: #000;
+        }
+
+        .btn-export:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(74, 222, 128, 0.3);
+        }
+
+        .btn-import {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .btn-import:hover {
+            background: #00a8d8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 191, 255, 0.3);
+        }
+
+        .notification {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: none;
+            animation: slideDown 0.3s ease;
+            font-size: 0.9rem;
+            border-left: 4px solid;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.success {
+            background: rgba(74, 222, 128, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .notification.error {
+            background: rgba(255, 107, 107, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid;
+        }
+
+        .metric-card.blue {
+            border-left-color: #3b82f6;
+        }
+
+        .metric-card.pink {
+            border-left-color: #ec4899;
+        }
+
+        .metric-card.purple {
+            border-left-color: #a855f7;
+        }
+
+        .metric-card.cyan {
+            border-left-color: #06b6d4;
+        }
+
+        .metric-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .metric-goal {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .content-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .section-header span {
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.1);
+        }
+
+        .btn-add {
+            background: var(--primary);
+            color: #000;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover {
+            background: #00a8d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 191, 255, 0.2);
+        }
+
+        .circle-display {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(0, 191, 255, 0.1);
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+        }
+
+        .item-text {
+            flex: 1;
+        }
+
+        .item-delete {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px 8px;
+            transition: all 0.2s ease;
+        }
+
+        .item-delete:hover {
+            color: #ff4757;
+        }
+
+        .item-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .item.completed {
+            opacity: 0.6;
+        }
+
+        .item.completed .item-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .button-bar {
+                flex-direction: column;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .insight-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .insight-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .insight-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .insight-button {
+            background: rgba(0, 191, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+        }
+
+        .insight-button:hover {
+            background: rgba(0, 191, 255, 0.2);
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        #hiddenFileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span>📊</span>
+                Weekly Dashboard
+            </h1>
+            <p id="weekInfo">Week 5 of 2026 • Tuesday, Jan 27</p>
+        </div>
+
+        <!-- Export/Import Buttons -->
+        <div class="button-bar">
+            <button class="btn btn-export" onclick="exportData()">💾 EXPORT DATA</button>
+            <button class="btn btn-import" onclick="importData()">📂 IMPORT DATA</button>
+        </div>
+
+        <!-- Notification -->
+        <div class="notification" id="notification"></div>
+
+        <!-- Metrics Cards -->
+        <div class="metrics">
+            <div class="metric-card blue">
+                <div class="metric-label">📑 Papers Read</div>
+                <div class="metric-value" id="paperCount">0</div>
+                <div class="metric-goal">Goal: 3 papers/week</div>
+            </div>
+
+            <div class="metric-card pink">
+                <div class="metric-label">✓ Tasks Completed</div>
+                <div class="metric-value" id="taskCount">0</div>
+                <div class="metric-goal">Total this week</div>
+            </div>
+
+            <div class="metric-card purple">
+                <div class="metric-label">💡 Content Created</div>
+                <div class="metric-value" id="contentCount">0</div>
+                <div class="metric-goal">Notes, articles, posts</div>
+            </div>
+
+            <div class="metric-card cyan">
+                <div class="metric-label">⚡ Topics Learned</div>
+                <div class="metric-value" id="topicCount">0</div>
+                <div class="metric-goal">New skills this week</div>
+            </div>
+        </div>
+
+        <!-- Papers and Tasks Section -->
+        <div class="two-column">
+            <div class="content-section">
+                <div class="section-header">
+                    <span>📑</span>
+                    Papers Read This Week
+                </div>
+                <div class="circle-display" id="paperCircle">0/3</div>
+                <div class="input-group">
+                    <input type="text" id="paperInput" placeholder="Paper title or topic...">
+                    <button class="btn-add" onclick="addPaper()">Add</button>
+                </div>
+                <div class="item-list" id="paperList"></div>
+            </div>
+
+            <div class="content-section">
+                <div class="section-header">
+                    <span>✓</span>
+                    This Week's Tasks
+                </div>
+                <div class="circle-display" id="taskCircle">0</div>
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="Add a task...">
+                    <button class="btn-add" onclick="addTask()">Add</button>
+                </div>
+                <div class="item-list" id="taskList"></div>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content-section" style="margin-top: 24px;">
+            <div class="section-header">
+                <span>💡</span>
+                Content Organized & Topics Learned
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-weight: 600; color: var(--primary);">
+                        📄 Content Pieces
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="contentInput" placeholder="Article, note, or post...">
+                        <button class="btn-add" onclick="addContent()">Add</button>
+                    </div>
+                    <div class="item-list" id="contentList"></div>
+                </div>
+
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-weight: 600; color: var(--primary);">
+                        ⚡ Topics Mastered
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="topicInput" placeholder="New skill or concept...">
+                        <button class="btn-add" onclick="addTopic()">Add</button>
+                    </div>
+                    <div class="item-list" id="topicList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Insight -->
+        <div class="insight-section" style="margin-top: 24px;">
+            <div class="insight-title">
+                <span>💡</span>
+                Weekly Insight
+            </div>
+            <div class="insight-text">
+                Keep tracking your progress! Complete tasks, read papers, and organize your content. Every item tracked brings you closer to mastery.
+            </div>
+            <button class="insight-button" onclick="generateSummary()">Generate Weekly Summary</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-note">
+            🚀 Track your research, tasks, and content creation weekly. Sync this dashboard across your home & work PC.
+        </div>
+    </div>
+
+    <input type="file" id="hiddenFileInput" accept=".json" />
+
+    <script>
+        // Data structure
+        let dashboardData = {
+            weekNumber: 5,
+            year: 2026,
+            date: new Date().toISOString().split('T')[0],
+            papers: [],
+            tasks: [],
+            content: [],
+            topics: []
+        };
+
+        // Initialize
+        function init() {
+            loadFromLocalStorage();
+            updateWeekInfo();
+            render();
+        }
+
+        // Update week info
+        function updateWeekInfo() {
+            const options = { weekday: 'long', month: 'short', day: 'numeric' };
+            const date = new Date().toLocaleDateString('en-US', options);
+            document.getElementById('weekInfo').textContent = `Week ${dashboardData.weekNumber} of ${dashboardData.year} • ${date}`;
+        }
+
+        // Add paper
+        function addPaper() {
+            const input = document.getElementById('paperInput');
+            const value = input.value.trim();
+            if (value) {
+                dashboardData.papers.push({ text: value, completed: false });
+                input.value = '';
+                render();
+                saveToLocalStorage();
+            }
+        }
+
+        // Add task
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const value = input.value.trim();
+            if (value) {
+                dashboardData.tasks.push({ text: value, completed: false });
+                input.value = '';
+                render();
+                saveToLocalStorage();
+            }
+        }
+
+        // Add content
+        function addContent() {
+            const input = document.getElementById('contentInput');
+            const value = input.value.trim();
+            if (value) {
+                dashboardData.content.push({ text: value, completed: false });
+                input.value = '';
+                render();
+                saveToLocalStorage();
+            }
+        }
+
+        // Add topic
+        function addTopic() {
+            const input = document.getElementById('topicInput');
+            const value = input.value.trim();
+            if (value) {
+                dashboardData.topics.push({ text: value, completed: false });
+                input.value = '';
+                render();
+                saveToLocalStorage();
+            }
+        }
+
+        // Toggle completion
+        function toggleComplete(category, index) {
+            dashboardData[category][index].completed = !dashboardData[category][index].completed;
+            render();
+            saveToLocalStorage();
+        }
+
+        // Delete item
+        function deleteItem(category, index) {
+            dashboardData[category].splice(index, 1);
+            render();
+            saveToLocalStorage();
+        }
+
+        // Render UI
+        function render() {
+            renderList('papers', 'paperList');
+            renderList('tasks', 'taskList');
+            renderList('content', 'contentList');
+            renderList('topics', 'topicList');
+
+            // Update counts
+            const completedPapers = dashboardData.papers.filter(p => p.completed).length;
+            const completedTasks = dashboardData.tasks.filter(t => t.completed).length;
+            const completedContent = dashboardData.content.filter(c => c.completed).length;
+            const completedTopics = dashboardData.topics.filter(t => t.completed).length;
+
+            document.getElementById('paperCount').textContent = completedPapers;
+            document.getElementById('taskCount').textContent = completedTasks;
+            document.getElementById('contentCount').textContent = completedContent;
+            document.getElementById('topicCount').textContent = completedTopics;
+
+            document.getElementById('paperCircle').textContent = `${completedPapers}/3`;
+        }
+
+        function renderList(category, elementId) {
+            const list = document.getElementById(elementId);
+            list.innerHTML = '';
+            dashboardData[category].forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `item ${item.completed ? 'completed' : ''}`;
+                div.innerHTML = `
+                    <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleComplete('${category}', ${index})">
+                    <div class="item-text">${item.text}</div>
+                    <button class="item-delete" onclick="deleteItem('${category}', ${index})">×</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // Export data
+        function exportData() {
+            const dataStr = JSON.stringify(dashboardData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            const date = dashboardData.date;
+            link.href = url;
+            link.download = `weekly_dashboard_${date}.json`;
+            link.click();
+            showNotification('✅ Data exported successfully!', 'success');
+        }
+
+        // Import data
+        function importData() {
+            document.getElementById('hiddenFileInput').click();
+        }
+
+        document.getElementById('hiddenFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    dashboardData = imported;
+                    saveToLocalStorage();
+                    render();
+                    showNotification('✅ Data imported successfully!', 'success');
+                } catch (err) {
+                    showNotification('❌ Error importing file. Make sure it\'s a valid JSON file.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        });
+
+        // Local storage
+        function saveToLocalStorage() {
+            localStorage.setItem('dashboardData', JSON.stringify(dashboardData));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('dashboardData');
+            if (saved) {
+                try {
+                    dashboardData = JSON.parse(saved);
+                } catch {
+                    console.log('No saved data found');
+                }
+            }
+        }
+
+        // Notification
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification show ${type}`;
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 3000);
+        }
+
+        // Generate summary
+        function generateSummary() {
+            const summary = `
+📊 WEEKLY SUMMARY
+Week ${dashboardData.weekNumber} of ${dashboardData.year}
+
+📑 Papers: ${dashboardData.papers.length} read (Goal: 3)
+✓ Tasks: ${dashboardData.tasks.filter(t => t.completed).length}/${dashboardData.tasks.length} completed
+💡 Content: ${dashboardData.content.length} pieces created
+⚡ Topics: ${dashboardData.topics.length} mastered
+
+Keep up the great work! 🚀
+            `;
+            alert(summary);
+        }
+
+        // Load on page load
+        window.addEventListener('load', init);
+
+        // Enter key support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (document.activeElement.id === 'paperInput') addPaper();
+                else if (document.activeElement.id === 'taskInput') addTask();
+                else if (document.activeElement.id === 'contentInput') addContent();
+                else if (document.activeElement.id === 'topicInput') addTopic();
+            }
+        });
+    </script>
+</body>
+</html>
