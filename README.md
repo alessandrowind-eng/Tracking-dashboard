@@ -19,4 +19,4 @@ A **weekly research tracking dashboard** to stay on top of papers read, tasks co
 1. Open the live link at the start of the week.
 2. Add tasks, papers, and topics as I go.
 3. Review the **Weekly Insight** section every Sunday to plan the next week.
-d
+
